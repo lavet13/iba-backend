@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  USER
+}
+
+model WbOrder {
+  id        Int         @id @default(autoincrement())
+  name      String
+  phone     String
+  qrCode    String?     @unique
+  orderCode String?     @unique
+  wbPhone   String?
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([qrCode, orderCode, wbPhone])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELLED
+}
