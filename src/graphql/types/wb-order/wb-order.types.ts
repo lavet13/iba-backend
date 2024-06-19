@@ -1,8 +1,20 @@
 import gql from 'graphql-tag';
 
 export default gql`
+  type Query {
+    wbOrderById(id: ID!): WbOrder
+  }
+
   type Mutation {
-    saveQR(file: File!): Boolean!
+    saveWbOrder(input: WbOrderInput!): Boolean!
+  }
+
+  input WbOrderInput {
+    FLP: String!
+    QR: File
+    orderCode: String
+    phone: String!
+    wbPhone: String
   }
 
   type WbOrder {

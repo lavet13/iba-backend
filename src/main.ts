@@ -11,6 +11,8 @@ import typeDefs from './graphql/types';
 import { createContext } from './context';
 import { createYoga } from 'graphql-yoga';
 
+import routerQrCodeImage from './routes/qr-code-image';
+
 const schema = makeExecutableSchema({
   typeDefs,
   resolvers,
@@ -43,11 +45,9 @@ async function bootstrap() {
   console.log({ DATABASE_URL: process.env.DATABASE_URL });
 
   // create endpoints before yoga's endpoint
-  // app.get('/test', (req, res) => {
-  //   res.send({ success: false });
-  // });
+  app.use('/assets/qr-codes', routerQrCodeImage);
 
-  app.use(import.meta.env.VITE_GRAPHQL_ENDPOINT, yoga);
+  app.use(yoga);
 
   if (import.meta.env.PROD) {
     app.listen(import.meta.env.VITE_PORT, () => {
