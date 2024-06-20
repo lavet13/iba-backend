@@ -29,17 +29,17 @@ enum Role {
 }
 
 model WbOrder {
-  id        Int         @id @default(autoincrement())
+  id        BigInt      @id @default(autoincrement())
   name      String
   phone     String
   qrCode    String?     @unique
-  orderCode String?     @unique
+  orderCode String?
   wbPhone   String?
   status    OrderStatus @default(PENDING)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 
-  @@index([qrCode, orderCode, wbPhone])
+  @@index([qrCode, wbPhone])
 }
 
 enum OrderStatus {

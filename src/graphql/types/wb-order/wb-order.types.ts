@@ -2,8 +2,28 @@ import gql from 'graphql-tag';
 
 export default gql`
   type Query {
+    wbOrders(input: WbOrdersInput!): WbOrdersResponse!
     wbOrderById(id: ID!): WbOrder
   }
+
+  input WbOrdersInput {
+    take: Int
+    after: ID
+    before: ID
+  }
+
+  type PageInfo {
+    startCursor: ID
+    endCursor: ID
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
+  }
+
+  type WbOrdersResponse {
+    edges: [WbOrder!]!
+    pageInfo: PageInfo!
+  }
+
 
   type Mutation {
     saveWbOrder(input: WbOrderInput!): Boolean!
