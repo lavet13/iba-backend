@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import 'json-bigint-patch';
 
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { useCookies } from '@whatwg-node/server-plugin-cookies';

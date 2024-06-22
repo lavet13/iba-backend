@@ -42,23 +42,19 @@ const resolvers: Resolvers = {
           : {
               id:
                 direction === PaginationDirection.FORWARD
-                  ? args.input.after
-                    ? BigInt(args.input.after)
-                    : undefined
-                  : args.input.before
-                    ? BigInt(args.input.before)
-                    : undefined,
+                  ? args.input.after ?? undefined
+                  : args.input.before ?? undefined,
             };
 
       // in case where we might get cursor which points to nothing
       if (direction !== PaginationDirection.NONE) {
         // checking if the cursor pointing to the wbOrder doesn't exist,
         // otherwise skip
-        const cursorLoan = await ctx.prisma.wbOrder.findUnique({
-          where: { id: cursor?.id ? BigInt(cursor.id) : undefined },
+        const cursorOrder = await ctx.prisma.wbOrder.findUnique({
+          where: { id: cursor?.id },
         });
 
-        if (!cursorLoan) {
+        if (!cursorOrder) {
           if (direction === PaginationDirection.FORWARD) {
             // this shit is shit and isn't work for me,
             // or because perhaps I am retard ☺️💕
@@ -70,21 +66,21 @@ const resolvers: Resolvers = {
             // console.log({ previousValidPost });
             // cursor = previousValidPost ? { id: previousValidPost.id } : undefined;
 
-            cursor = { id: BigInt(-1) }; // we guarantee credits are empty
+            cursor = { id: -1 }; // we guarantee credits are empty
           } else if (direction === PaginationDirection.BACKWARD) {
-            const nextValidLoan = await ctx.prisma.wbOrder.findFirst({
+            const nextValidOrder = await ctx.prisma.wbOrder.findFirst({
               where: {
                 id: {
-                  gt: args.input.before ? BigInt(args.input.before) : undefined,
+                  gt: args.input.before,
                 },
               },
               orderBy: {
                 id: 'asc',
               },
             });
-            console.log({ nextValidLoan });
+            console.log({ nextValidOrder });
 
-            cursor = nextValidLoan ? { id: nextValidLoan.id } : undefined;
+            cursor = nextValidOrder ? { id: nextValidOrder.id } : undefined;
           }
         }
       }
@@ -97,7 +93,6 @@ const resolvers: Resolvers = {
         skip: cursor ? 1 : undefined, // Skip the cursor wbOrder for the next/previous page
         orderBy: { id: 'desc' }, // Order by id for consistent pagination
       });
-
 
       // If no results are retrieved, it means we've reached the end of the
       // pagination or because we stumble upon invalid cursor, so on the
@@ -131,8 +126,8 @@ const resolvers: Resolvers = {
 
       const hasMore = credits.length > take;
 
-      const startCursor = edges.length === 0 ? null : edges[0]?.id.toString();
-      const endCursor = edges.length === 0 ? null : edges.at(-1)?.id.toString();
+      const startCursor = edges.length === 0 ? null : edges[0]?.id;
+      const endCursor = edges.length === 0 ? null : edges.at(-1)?.id;
 
       // This is where the condition `edges.length < credits.length` comes into
       // play. If the length of the `edges` array is less than the length
@@ -169,7 +164,7 @@ const resolvers: Resolvers = {
       };
     },
     async wbOrderById(_, args, ctx) {
-      const id = BigInt(args.id);
+      const id = args.id;
 
       const orderWb = await ctx.prisma.wbOrder
         .findUnique({
@@ -233,7 +228,7 @@ const resolvers: Resolvers = {
         console.log({ cwd: process.cwd() });
 
         const _sharp = sharp(await file.arrayBuffer());
-        const folderPath = path.join(process.cwd(), 'assets');
+        const folderPath = path.join(process.cwd(), 'assets', 'qr-codes');
         const fileToWrite = path.join(folderPath, fileName);
 
         console.log({ fileName: file.name, fileToWrite });
@@ -244,7 +239,7 @@ const resolvers: Resolvers = {
 
         try {
           const objSharp = await _sharp
-            .resize({ width: 500 })
+            .resize({ width: 177 })
             .jpeg()
             .toFile(fileToWrite);
           console.log({ objSharp });

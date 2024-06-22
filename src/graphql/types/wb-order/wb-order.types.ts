@@ -3,18 +3,18 @@ import gql from 'graphql-tag';
 export default gql`
   type Query {
     wbOrders(input: WbOrdersInput!): WbOrdersResponse!
-    wbOrderById(id: ID!): WbOrder
+    wbOrderById(id: BigInt!): WbOrder
   }
 
   input WbOrdersInput {
     take: Int
-    after: ID
-    before: ID
+    after: BigInt
+    before: BigInt
   }
 
   type PageInfo {
-    startCursor: ID
-    endCursor: ID
+    startCursor: BigInt
+    endCursor: BigInt
     hasNextPage: Boolean!
     hasPreviousPage: Boolean!
   }
@@ -38,7 +38,7 @@ export default gql`
   }
 
   type WbOrder {
-    id: ID!
+    id: BigInt!
     name: String!
     phone: String!
     qrCode: String
