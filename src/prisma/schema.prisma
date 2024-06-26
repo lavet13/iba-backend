@@ -11,13 +11,14 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id           String         @id @default(uuid())
+  name         String
+  email        String         @unique
+  password     String
+  role         Role           @default(USER)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  RefreshToken RefreshToken[]
 
   @@map("users")
 }
@@ -27,6 +28,18 @@ enum Role {
   MANAGER
   USER
 }
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  expiredAt DateTime
+  createdAt DateTime @default(now())
+
+  @@map("refresh_tokens")
+}
+
 
 model WbOrder {
   id        BigInt      @id @default(autoincrement())
@@ -40,6 +53,7 @@ model WbOrder {
   updatedAt DateTime    @updatedAt
 
   @@index([qrCode, wbPhone])
+  @@map("wb_order")
 }
 
 enum OrderStatus {

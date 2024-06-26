@@ -66,7 +66,7 @@ const resolvers: Resolvers = {
             // console.log({ previousValidPost });
             // cursor = previousValidPost ? { id: previousValidPost.id } : undefined;
 
-            cursor = { id: -1 }; // we guarantee credits are empty
+            cursor = { id: -1 }; // we guarantee wbOrders are empty
           } else if (direction === PaginationDirection.BACKWARD) {
             const nextValidOrder = await ctx.prisma.wbOrder.findFirst({
               where: {
@@ -85,8 +85,8 @@ const resolvers: Resolvers = {
         }
       }
 
-      // fetching credits with extra one, so to determine if there's more to fetch
-      const credits = await ctx.prisma.wbOrder.findMany({
+      // fetching wbOrders with extra one, so to determine if there's more to fetch
+      const wbOrders = await ctx.prisma.wbOrder.findMany({
         take:
           direction === PaginationDirection.BACKWARD ? -(take + 1) : take + 1, // Fetch one extra wbOrder for determining `hasNextPage`
         cursor,
@@ -96,11 +96,11 @@ const resolvers: Resolvers = {
 
       // If no results are retrieved, it means we've reached the end of the
       // pagination or because we stumble upon invalid cursor, so on the
-      // client we just clearing `before` and `after` cursors to get first credits
-      // forward pagination could have no credits at all,
+      // client we just clearing `before` and `after` cursors to get first wbOrders
+      // forward pagination could have no wbOrders at all,
       // or because cursor is set to `{ id: -1 }`, for backward pagination
-      // the only thing would happen if only credits are empty!
-      if (credits.length === 0) {
+      // the only thing would happen if only wbOrders are empty!
+      if (wbOrders.length === 0) {
         return {
           edges: [],
           pageInfo: {
@@ -111,41 +111,41 @@ const resolvers: Resolvers = {
         };
       }
 
-      // If the number of credits fetched is less than or equal to the
-      // `take` value, you include all the credits in the `edges` array.
-      // However, if the number of credits fetched is greater than
+      // If the number of wbOrders fetched is less than or equal to the
+      // `take` value, you include all the wbOrders in the `edges` array.
+      // However, if the number of wbOrders fetched is greater than
       // the `take` value, you exclude the extra wbOrder from
-      // the `edges` array by slicing the credits array.
+      // the `edges` array by slicing the wbOrders array.
       const edges =
-        credits.length <= take
-          ? credits
+        wbOrders.length <= take
+          ? wbOrders
           : direction === PaginationDirection.BACKWARD
-            ? credits.slice(1, credits.length)
-            : credits.slice(0, -1);
+            ? wbOrders.slice(1, wbOrders.length)
+            : wbOrders.slice(0, -1);
       console.log({ edges });
 
-      const hasMore = credits.length > take;
+      const hasMore = wbOrders.length > take;
 
       const startCursor = edges.length === 0 ? null : edges[0]?.id;
       const endCursor = edges.length === 0 ? null : edges.at(-1)?.id;
 
-      // This is where the condition `edges.length < credits.length` comes into
+      // This is where the condition `edges.length < wbOrders.length` comes into
       // play. If the length of the `edges` array is less than the length
-      // of the `credits` array, it means that the extra wbOrder was fetched and
+      // of the `wbOrders` array, it means that the extra wbOrder was fetched and
       // excluded from the `edges` array. That implies that there are more
-      // credits available to fetch in the current pagination direction.
+      // wbOrders available to fetch in the current pagination direction.
       const hasNextPage =
         direction === PaginationDirection.BACKWARD ||
         (direction === PaginationDirection.FORWARD && hasMore) ||
         (direction === PaginationDirection.NONE &&
-          edges.length < credits.length);
+          edges.length < wbOrders.length);
       // /\
       // |
       // |
-      // NOTE: This condition `edges.length < credits.length` is essentially
+      // NOTE: This condition `edges.length < wbOrders.length` is essentially
       // checking the same thing as `hasMore`, which is whether there are more
-      // credits available to fetch. Therefore, you can safely replace
-      // `edges.length < credits.length` with hasMore in the condition for
+      // wbOrders available to fetch. Therefore, you can safely replace
+      // `edges.length < wbOrders.length` with hasMore in the condition for
       // determining hasNextPage. Both conditions are equivalent and will
       // produce the same result.
 

@@ -1,5 +1,5 @@
 import prisma from './prisma';
-import generatePasswordHash from '../utils/auth/generate-password-hash';
+import generatePasswordHash from '../helpers/generate-password-hash';
 
 let countDown = 0;
 

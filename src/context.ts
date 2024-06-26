@@ -1,7 +1,7 @@
 import { YogaInitialContext } from 'graphql-yoga';
 import prisma from './prisma/prisma';
 import jwt from 'jsonwebtoken';
-import authenticateUser from './utils/auth/authenticate-user';
+import authenticateUser from './helpers/authenticate-user';
 
 export type ContextValue = {
   prisma: typeof prisma;

@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { GraphQLError } from 'graphql';
 
-import createToken from '../../utils/auth/create-token';
-import validatePassword from '../../utils/auth/validate-password';
-import generatePasswordHash from '../../utils/auth/generate-password-hash';
+import createToken from '../../helpers/create-token';
+import validatePassword from '../../helpers/validate-password';
+import generatePasswordHash from '../../helpers/generate-password-hash';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 const userExtension = Prisma.defineExtension(client => {
@@ -37,7 +37,7 @@ const userExtension = Prisma.defineExtension(client => {
             throw new GraphQLError('Введен неверный пароль!');
           }
 
-          const token = createToken(user, { expiresIn: '24h' });
+          const token = createToken(user);
 
           return { token };
         },
@@ -68,7 +68,7 @@ const userExtension = Prisma.defineExtension(client => {
               return Promise.reject(err);
             });
 
-          const token = createToken(newUser, { expiresIn: '24h' });
+          const token = createToken(newUser);
 
           return { token };
         },
