@@ -4,7 +4,6 @@ import generatePasswordHash from '../helpers/generate-password-hash';
 let countDown = 0;
 
 export default async function seed() {
-  console.log({ NODE_ENV: process.env.NODE_ENV });
   if (countDown > 0) {
     return;
   }

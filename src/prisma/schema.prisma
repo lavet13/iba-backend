@@ -40,24 +40,22 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
-
 model WbOrder {
-  id        BigInt      @id @default(autoincrement())
-  name      String
-  phone     String
-  qrCode    String?     @unique
-  orderCode String?
-  wbPhone   String?
-  status    OrderStatus @default(PENDING)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id          BigInt      @id @default(autoincrement())
+  name        String
+  phone       String
+  qrCode      String?     @unique
+  orderCode   String?
+  wbPhone     String?
+  status      OrderStatus @default(NOT_ASSEMBLED)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   @@index([qrCode, wbPhone])
-  @@map("wb_order")
 }
 
 enum OrderStatus {
-  PENDING
-  PAID
-  CANCELLED
+  NOT_ASSEMBLED @map("1")
+  ASSEMBLED     @map("2")
+  REJECTED      @map("3")
 }

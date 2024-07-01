@@ -12,7 +12,6 @@
     "deploy": "docker-compose up -d",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up -d",
     "docker:dev:stop": "docker-compose -f docker-compose.dev.yml down",
-    "seed": "npx prisma db seed",
     "migrate": "prisma migrate dev",
     "studio": "npx prisma studio",
     "start:prod": "cross-env NODE_ENV=production node dist/main.js",
@@ -30,8 +29,7 @@
     "email": "lavet13@mail.ru"
   },
   "prisma": {
-    "schema": "./src/prisma/schema.prisma",
-    "seed": "tsx ./src/prisma/seed.ts"
+    "schema": "./src/prisma/schema.prisma"
   },
   "license": "MIT",
   "devDependencies": {

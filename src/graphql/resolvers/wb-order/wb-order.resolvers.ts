@@ -25,7 +25,6 @@ const resolvers: Resolvers = {
         : args.input.before
           ? PaginationDirection.BACKWARD
           : PaginationDirection.NONE;
-      console.log({ before: args.input.before, after: args.input.after });
 
       const take = Math.abs(
         applyConstraints({
@@ -78,7 +77,6 @@ const resolvers: Resolvers = {
                 id: 'asc',
               },
             });
-            console.log({ nextValidOrder });
 
             cursor = nextValidOrder ? { id: nextValidOrder.id } : undefined;
           }
@@ -91,7 +89,7 @@ const resolvers: Resolvers = {
           direction === PaginationDirection.BACKWARD ? -(take + 1) : take + 1, // Fetch one extra wbOrder for determining `hasNextPage`
         cursor,
         skip: cursor ? 1 : undefined, // Skip the cursor wbOrder for the next/previous page
-        orderBy: { id: 'desc' }, // Order by id for consistent pagination
+        orderBy: { status: 'asc' }, // Order by id for consistent pagination
       });
 
       // If no results are retrieved, it means we've reached the end of the
@@ -122,7 +120,6 @@ const resolvers: Resolvers = {
           : direction === PaginationDirection.BACKWARD
             ? wbOrders.slice(1, wbOrders.length)
             : wbOrders.slice(0, -1);
-      console.log({ edges });
 
       const hasMore = wbOrders.length > take;
 
@@ -187,7 +184,6 @@ const resolvers: Resolvers = {
   },
   Mutation: {
     async saveWbOrder(_, args, ctx) {
-      console.log({ input: args.input });
       const file: File | null = args.input.QR;
 
       if (!file) {
@@ -215,34 +211,46 @@ const resolvers: Resolvers = {
         return false;
       }
 
-      console.log({ name: file.name });
-
       const { randomBytes } = await import('node:crypto');
 
       const hash = randomBytes(16).toString('hex');
       const lastDotIndex = file.name.lastIndexOf('.');
       const extension = file.name.slice(lastDotIndex + 1);
       const fileName = `${hash}.${extension}`;
+      const inputBuffer = await file.arrayBuffer();
 
       try {
-        console.log({ cwd: process.cwd() });
-
-        const _sharp = sharp(await file.arrayBuffer());
+        const _sharp = sharp(inputBuffer);
         const folderPath = path.join(process.cwd(), 'assets', 'qr-codes');
         const fileToWrite = path.join(folderPath, fileName);
 
-        console.log({ fileName: file.name, fileToWrite });
         fs.mkdirSync(folderPath, { recursive: true });
         if (!fs.existsSync(folderPath)) {
           fs.mkdirSync(folderPath, { recursive: true });
         }
 
         try {
-          const objSharp = await _sharp
-            .resize({ width: 177 })
+          const optimizedImage = await _sharp
+            .resize({
+              width: 500,
+              height: 500,
+              fit: 'contain',
+              withoutEnlargement: true,
+            })
             .jpeg()
-            .toFile(fileToWrite);
-          console.log({ objSharp });
+            .toBuffer();
+
+          console.log({
+            optLength: optimizedImage.length,
+            origLength: Buffer.from(inputBuffer).length,
+          });
+          // Check if the optimized image is significantly larger than the original
+          if (optimizedImage.length > Buffer.from(inputBuffer).length * 1.1) {
+            // If it's more than 10% larger, save the original instead
+            await fs.promises.writeFile(fileToWrite, Buffer.from(inputBuffer));
+          } else {
+            await fs.promises.writeFile(fileToWrite, optimizedImage);
+          }
         } catch (err: any) {
           try {
             fs.unlinkSync(fileToWrite);
@@ -278,6 +286,20 @@ const resolvers: Resolvers = {
         throw new GraphQLError('Unable to save file to `wb-order`');
       }
       return true;
+    },
+    async updateWbOrder(_, args, ctx) {
+      const { id, status } = args.input;
+
+      const orderWb = await ctx.prisma.wbOrder.update({
+        where: {
+          id,
+        },
+        data: {
+          status,
+        },
+      });
+
+      return orderWb;
     },
   },
 };

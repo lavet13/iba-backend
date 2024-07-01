@@ -6,6 +6,16 @@ export default gql`
     wbOrderById(id: BigInt!): WbOrder
   }
 
+  type Mutation {
+    saveWbOrder(input: WbOrderInput!): Boolean!
+    updateWbOrder(input: UpdateWbInput!): WbOrder!
+  }
+
+  input UpdateWbInput {
+    id: BigInt!
+    status: OrderStatus!
+  }
+
   input WbOrdersInput {
     take: Int
     after: BigInt
@@ -24,10 +34,6 @@ export default gql`
     pageInfo: PageInfo!
   }
 
-
-  type Mutation {
-    saveWbOrder(input: WbOrderInput!): Boolean!
-  }
 
   input WbOrderInput {
     FLP: String!
@@ -50,8 +56,8 @@ export default gql`
   }
 
   enum OrderStatus {
-    PENDING
-    PAID
-    CANCELLED
+    NOT_ASSEMBLED
+    ASSEMBLED
+    REJECTED
   }
 `;
