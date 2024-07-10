@@ -1,13 +1,12 @@
 import { RequestHandler } from 'express';
-import { verify } from '../helpers/authenticate-user';
-import jwt from 'jsonwebtoken';
+import { verifyAccessToken } from '../helpers/auth';
 import { createCookieHandler } from '../utils/express/create-cookie-handler';
 
 const isAdminMiddleware: RequestHandler = async (req, res, next) => {
-  const { cookieStore, applyChanges } = createCookieHandler(req, res);
+  const { cookieStore } = createCookieHandler(req, res);
 
-  const authorization = await cookieStore.get({ name: 'authorization' });
-  const token = authorization?.value;
+  const accessToken = await cookieStore.get({ name: 'accessToken' });
+  const token = accessToken?.value;
 
   if (!token) {
     return res.status(401).send('Unauthorized: No token provided');
@@ -16,10 +15,7 @@ const isAdminMiddleware: RequestHandler = async (req, res, next) => {
   let verified = null;
 
   try {
-    verified = (await verify(
-      token as string,
-      import.meta.env.VITE_SECRET,
-    )) as jwt.JwtPayload;
+    verified = verifyAccessToken(token);
 
     if (verified?.role === 'ADMIN') {
       return next();
@@ -27,11 +23,7 @@ const isAdminMiddleware: RequestHandler = async (req, res, next) => {
       return res.status(403).send('Forbidden: Admin access required');
     }
   } catch (error: unknown) {
-    console.log({ error });
-    await cookieStore.delete('authorization');
-    applyChanges();
-
-    return res.status(403).send('Forbidden: Verification failed');
+    return res.send(error);
   }
 };
 

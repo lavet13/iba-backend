@@ -20,10 +20,12 @@ export default gql`
     login(loginInput: LoginInput!): AuthPayload!
     signup(signupInput: SignupInput!): AuthPayload!
     logout: Boolean!
+    refreshToken: AuthPayload!
   }
 
   type AuthPayload {
-    token: String!
+    accessToken: String!
+    refreshToken: String!
   }
 
   type User {

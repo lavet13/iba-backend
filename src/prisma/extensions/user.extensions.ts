@@ -1,7 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { GraphQLError } from 'graphql';
 
-import createToken from '../../helpers/create-token';
+import createTokens from '../../helpers/create-tokens';
 import validatePassword from '../../helpers/validate-password';
 import generatePasswordHash from '../../helpers/generate-password-hash';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -11,7 +11,6 @@ const userExtension = Prisma.defineExtension(client => {
     model: {
       user: {
         async login(login: string, password: string) {
-          console.log({ login, password });
           const user = await client.user.findFirst({
             where: {
               OR: [
@@ -25,8 +24,6 @@ const userExtension = Prisma.defineExtension(client => {
             },
           });
 
-          console.log({ user });
-
           if (!user) {
             throw new GraphQLError('Такого пользователя не существует!');
           }
@@ -37,9 +34,17 @@ const userExtension = Prisma.defineExtension(client => {
             throw new GraphQLError('Введен неверный пароль!');
           }
 
-          const token = createToken(user);
+          const { accessToken, refreshToken } = createTokens(user);
 
-          return { token };
+          await client.refreshToken.create({
+            data: {
+              token: refreshToken,
+              userId: user.id,
+              expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+            },
+          });
+
+          return { accessToken, refreshToken };
         },
 
         async signup(email: string, name: string, password: string) {
@@ -68,9 +73,17 @@ const userExtension = Prisma.defineExtension(client => {
               return Promise.reject(err);
             });
 
-          const token = createToken(newUser);
+          const { accessToken, refreshToken } = createTokens(newUser);
 
-          return { token };
+          await client.refreshToken.create({
+            data: {
+              token: refreshToken,
+              userId: newUser.id,
+              expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+            },
+          });
+
+          return { accessToken, refreshToken };
         },
       },
     },

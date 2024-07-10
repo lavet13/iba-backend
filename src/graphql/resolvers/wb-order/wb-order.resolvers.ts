@@ -89,7 +89,7 @@ const resolvers: Resolvers = {
           direction === PaginationDirection.BACKWARD ? -(take + 1) : take + 1, // Fetch one extra wbOrder for determining `hasNextPage`
         cursor,
         skip: cursor ? 1 : undefined, // Skip the cursor wbOrder for the next/previous page
-        orderBy: { status: 'asc' }, // Order by id for consistent pagination
+        orderBy: [{ status: 'asc' }, { updatedAt: 'desc' }], // Order by id for consistent pagination
       });
 
       // If no results are retrieved, it means we've reached the end of the
@@ -214,77 +214,92 @@ const resolvers: Resolvers = {
       const { randomBytes } = await import('node:crypto');
 
       const hash = randomBytes(16).toString('hex');
-      const lastDotIndex = file.name.lastIndexOf('.');
-      const extension = file.name.slice(lastDotIndex + 1);
-      const fileName = `${hash}.${extension}`;
-      const inputBuffer = await file.arrayBuffer();
+      const extension = path.extname(file.name);
+      const fileName = `${hash}${extension}`;
+      const originalBuffer = Buffer.from(await file.arrayBuffer());
+
+      const folderPath = path.join(process.cwd(), 'assets', 'qr-codes');
+      const fileToWrite = path.join(folderPath, fileName);
+
+      if (!fs.existsSync(folderPath)) {
+        try {
+          await fs.promises.mkdir(folderPath, { recursive: true });
+        } catch (err) {
+          console.error('Unable to make a directory: ', err);
+          throw new GraphQLError('Directory creation failed!');
+        }
+      }
+
+      const _sharp = sharp(originalBuffer);
+      const metadata = await _sharp.metadata();
 
       try {
-        const _sharp = sharp(inputBuffer);
-        const folderPath = path.join(process.cwd(), 'assets', 'qr-codes');
-        const fileToWrite = path.join(folderPath, fileName);
-
-        fs.mkdirSync(folderPath, { recursive: true });
-        if (!fs.existsSync(folderPath)) {
-          fs.mkdirSync(folderPath, { recursive: true });
-        }
-
-        try {
-          const optimizedImage = await _sharp
+        let optimizedImage: Buffer;
+        if (metadata.format === 'png') {
+          optimizedImage = await _sharp
             .resize({
               width: 500,
               height: 500,
-              fit: 'contain',
+              fit: 'inside',
               withoutEnlargement: true,
             })
-            .jpeg()
+            .png({ quality: 80, palette: true })
             .toBuffer();
-
-          console.log({
-            optLength: optimizedImage.length,
-            origLength: Buffer.from(inputBuffer).length,
-          });
-          // Check if the optimized image is significantly larger than the original
-          if (optimizedImage.length > Buffer.from(inputBuffer).length * 1.1) {
-            // If it's more than 10% larger, save the original instead
-            await fs.promises.writeFile(fileToWrite, Buffer.from(inputBuffer));
-          } else {
-            await fs.promises.writeFile(fileToWrite, optimizedImage);
-          }
-        } catch (err: any) {
-          try {
-            fs.unlinkSync(fileToWrite);
-          } catch (err) {
-            throw new GraphQLError('Failed to delete the image!');
-          }
-          throw new GraphQLError('Failed to optimize the image!');
+        } else {
+          optimizedImage = await _sharp
+            .resize({
+              width: 500,
+              height: 500,
+              fit: 'inside',
+              withoutEnlargement: true,
+            })
+            .jpeg({ quality: 80 })
+            .toBuffer();
+        }
+        console.log({
+          optLength: optimizedImage.length,
+          origLength: originalBuffer.length,
+        });
+        // Check if the optimized image is significantly larger than the original
+        if (optimizedImage.length > originalBuffer.length * 1.1) {
+          // If it's more than 10% larger, save the original instead
+          await fs.promises.writeFile(fileToWrite, originalBuffer);
+        } else {
+          await fs.promises.writeFile(fileToWrite, optimizedImage);
+        }
+      } catch (err: any) {
+        try {
+          await fs.promises.unlink(fileToWrite);
+        } catch (unlinkErr) {
+          console.error('Failed to delete file: ', unlinkErr);
         }
 
-        await ctx.prisma.wbOrder
-          .create({
-            data: {
-              name: args.input.FLP,
-              phone: args.input.phone,
-              orderCode: args.input.orderCode,
-              wbPhone: args.input.wbPhone,
-              qrCode: fileName,
-            },
-          })
-          .catch((err: unknown) => {
-            if (err instanceof PrismaClientKnownRequestError) {
-              if (err.code === 'P2002') {
-                throw new GraphQLError(
-                  `Код заказа \`${args.input.orderCode}\` уже существует!`,
-                );
-              }
-            }
-            console.log({ err });
-            throw new GraphQLError('Unknown error!');
-          });
-      } catch (err) {
-        console.log({ err });
-        throw new GraphQLError('Unable to save file to `wb-order`');
+        console.error('Optimization error: ', err);
+        throw new GraphQLError('Unexpected error during image optimization!');
       }
+
+      await ctx.prisma.wbOrder
+        .create({
+          data: {
+            name: args.input.FLP,
+            phone: args.input.phone,
+            orderCode: args.input.orderCode,
+            wbPhone: args.input.wbPhone,
+            qrCode: fileName,
+          },
+        })
+        .catch((err: unknown) => {
+          if (err instanceof PrismaClientKnownRequestError) {
+            if (err.code === 'P2002') {
+              throw new GraphQLError(
+                `Код заказа \`${args.input.orderCode}\` уже существует!`,
+              );
+            }
+          }
+          console.log({ err });
+          throw new GraphQLError('Unknown error!');
+        });
+
       return true;
     },
     async updateWbOrder(_, args, ctx) {

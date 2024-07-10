@@ -1,18 +1,22 @@
 import { ResolversComposition } from '@graphql-tools/resolvers-composition';
 import { GraphQLError, GraphQLFieldResolver } from 'graphql';
 import { ContextValue } from '../../context';
+import { verifyAccessToken } from '../../helpers/auth';
+import { ErrorCode } from '../../helpers/error-codes';
 
 export const isAuthenticated =
   (): ResolversComposition<GraphQLFieldResolver<any, ContextValue, any>> =>
   next =>
   async (parent, args, ctx, info) => {
-    const me = ctx.me;
-    console.log({ me });
+    if(!ctx.token) {
+      throw new GraphQLError('Необходима авторизация!', { extensions: { code: ErrorCode.UNAUTHENTICATED } });
+    }
 
-    if (!me) {
-      throw new GraphQLError('Отказ в доступе. Не авторизован.', {
-        extensions: { statusCode: 401 },
-      });
+    try {
+      const decoded = verifyAccessToken(ctx.token);
+      ctx.me = decoded;
+    } catch(err) {
+      throw err;
     }
 
     return next(parent, args, ctx, info);
@@ -23,6 +27,7 @@ export const isAdmin =
   next =>
   async (parent, args, ctx, info) => {
     const me = ctx.me;
+
     const user = await ctx.prisma.user.findUnique({
       where: {
         id: me!.id,
@@ -30,7 +35,7 @@ export const isAdmin =
     });
 
     if (user!.role !== 'ADMIN') {
-      throw new GraphQLError('Нет прав!', { extensions: { statusCode: 401 } });
+      throw new GraphQLError('Нет прав!', { extensions: { code: ErrorCode.UNAUTHENTICATED } });
     }
 
     return next(parent, args, ctx, info);
@@ -48,7 +53,7 @@ export const isManager =
     });
 
     if (user!.role !== 'MANAGER') {
-      throw new GraphQLError('Нет прав!', { extensions: { statusCode: 401 } });
+      throw new GraphQLError('Нет прав!', { extensions: { code: ErrorCode.UNAUTHENTICATED } });
     }
 
     return next(parent, args, ctx, info);
