@@ -7,14 +7,14 @@
   "private": "true",
   "scripts": {
     "dev": "vite",
-    "build": "rm -rf dist && vite build",
+    "build": "rm -rf dist && vite build --debug",
     "debug": "vite --debug --inspect-brk",
     "deploy": "docker-compose up -d",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up -d",
     "docker:dev:stop": "docker-compose -f docker-compose.dev.yml down",
     "migrate": "prisma migrate dev",
     "studio": "npx prisma studio",
-    "start:prod": "cross-env NODE_ENV=production node dist/main.js",
+    "start:prod": "cross-env NODE_ENV=production node --inspect dist/main.js",
     "start:migrate:prod": "npx prisma migrate deploy && npm run start:prod"
   },
   "keywords": [
@@ -52,6 +52,7 @@
     "vite-plugin-dynamic-import": "^1.5.0",
     "vite-plugin-graphql-codegen": "^3.3.6",
     "vite-plugin-node": "^3.1.0",
+    "vite-plugin-node-polyfills": "^0.22.0",
     "vite-plugin-top-level-await": "^1.4.1"
   },
   "dependencies": {
@@ -77,6 +78,7 @@
     "graphql-yoga": "^5.1.1",
     "json-bigint-patch": "^0.0.8",
     "jsonwebtoken": "^9.0.2",
+    "jsonwebtoken-esm": "^2.0.1",
     "sharp": "^0.33.4",
     "tsx": "^4.10.3",
     "uuid": "^9.0.1"

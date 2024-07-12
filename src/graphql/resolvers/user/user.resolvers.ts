@@ -6,12 +6,11 @@ import {
 } from '@graphql-tools/resolvers-composition';
 import { isAuthenticated } from '../../composition/authorization';
 import { GraphQLError } from 'graphql';
-import { decodeRefreshToken, verifyRefreshToken } from '../../../helpers/auth';
+import { verifyRefreshToken } from '../../../helpers/auth';
 import createTokens, {
   REFRESH_TOKEN_TTL,
 } from '../../../helpers/create-tokens';
 import { ErrorCode } from '../../../helpers/error-codes';
-import jwt from 'jsonwebtoken';
 
 const resolvers: Resolvers = {
   Query: {

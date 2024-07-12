@@ -1,23 +1,6 @@
-import path from 'path';
 import { mergeTypeDefs } from '@graphql-tools/merge';
-import { loadFiles } from '@graphql-tools/load-files';
+import userTypes from './user/user.types';
+import wbOrderTypes from './wb-order/wb-order.types';
+import scalarTypes from './scalar/scalar.types';
 
-const folderPath = path.join(process.cwd(), '/src/graphql/types');
-
-const loadedTypeDefs = await loadFiles(`${folderPath}/**/*.types.*`, {
-  ignoreIndex: true,
-  requireMethod: async (fullPath: string) => {
-    const fileNameWithExtension = path.basename(fullPath);
-
-    const { name } = path.parse(fileNameWithExtension);
-
-    const relativePath = path.relative(folderPath, fullPath);
-    const folderName = path.dirname(relativePath);
-
-    console.log({ relativePath, folderName, folderPath, fullPath });
-
-    return await import(`./${folderName}/${name}`);
-  },
-});
-
-export default mergeTypeDefs(loadedTypeDefs);
+export default mergeTypeDefs([scalarTypes, userTypes, wbOrderTypes]);

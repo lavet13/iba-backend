@@ -3,24 +3,6 @@ import jwt from 'jsonwebtoken';
 import { GraphQLError } from 'graphql';
 import { ErrorCode } from './error-codes';
 
-export async function getTokenFromRequest(request: Request) {
-  const accessToken = await request.cookieStore?.get({
-    name: 'accessToken',
-  });
-
-  return accessToken?.value || null;
-}
-
-export function decodeToken(token: string) {
-  try {
-    return jwt.decode(token) as jwt.JwtPayload;
-  } catch (error: any) {
-    throw new GraphQLError('Failed to decode token', {
-      extensions: { code: ErrorCode.INVALID_TOKEN },
-    });
-  }
-}
-
 export function verifyAccessToken(token: string) {
   try {
     return jwt.verify(token, import.meta.env.VITE_JWT_SECRET) as jwt.JwtPayload;
@@ -33,16 +15,6 @@ export function verifyAccessToken(token: string) {
     throw new GraphQLError(error.message, {
       extensions: { code: ErrorCode.INVALID_TOKEN },
     });
-  }
-}
-
-export function decodeRefreshToken(token: string) {
-  try {
-    const decoded = decodeToken(token);
-
-    return decoded;
-  } catch(error) {
-    throw error;
   }
 }
 

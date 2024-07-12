@@ -256,10 +256,6 @@ const resolvers: Resolvers = {
             .jpeg({ quality: 80 })
             .toBuffer();
         }
-        console.log({
-          optLength: optimizedImage.length,
-          origLength: originalBuffer.length,
-        });
         // Check if the optimized image is significantly larger than the original
         if (optimizedImage.length > originalBuffer.length * 1.1) {
           // If it's more than 10% larger, save the original instead
