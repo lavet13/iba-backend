@@ -14,6 +14,13 @@ export default gql`
   input UpdateWbInput {
     id: BigInt!
     status: OrderStatus!
+    name: String!
+    phone: String!
+    qrCode: String
+    orderCode: String
+    wbPhone: String
+    createdAt: Date!
+    updatedAt: Date!
   }
 
   input WbOrdersInput {
