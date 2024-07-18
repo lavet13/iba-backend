@@ -187,7 +187,7 @@ const resolvers: Resolvers = {
       const file: File | null = args.input.QR;
 
       if (!file) {
-        await ctx.prisma.wbOrder
+        const newWbOrder = await ctx.prisma.wbOrder
           .create({
             data: {
               name: args.input.FLP,
@@ -208,7 +208,9 @@ const resolvers: Resolvers = {
             throw new GraphQLError('Unknown error!');
           });
 
-        return false;
+        ctx.pubSub.publish('newWbOrder', { newWbOrder });
+
+        return newWbOrder;
       }
 
       const { randomBytes } = await import('node:crypto');
@@ -274,7 +276,7 @@ const resolvers: Resolvers = {
         throw new GraphQLError('Unexpected error during image optimization!');
       }
 
-      await ctx.prisma.wbOrder
+      const newWbOrder = await ctx.prisma.wbOrder
         .create({
           data: {
             name: args.input.FLP,
@@ -296,7 +298,9 @@ const resolvers: Resolvers = {
           throw new GraphQLError('Unknown error!');
         });
 
-      return true;
+      ctx.pubSub.publish('newWbOrder', { newWbOrder });
+
+      return newWbOrder;
     },
     async updateWbOrder(_, args, ctx) {
       const { id, status } = args.input;
@@ -311,6 +315,11 @@ const resolvers: Resolvers = {
       });
 
       return orderWb;
+    },
+  },
+  Subscription: {
+    newWbOrder: {
+      subscribe: (_, args, ctx) => ctx.pubSub.subscribe('newWbOrder')
     },
   },
 };

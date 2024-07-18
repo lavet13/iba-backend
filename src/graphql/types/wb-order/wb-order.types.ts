@@ -7,8 +7,12 @@ export default gql`
   }
 
   type Mutation {
-    saveWbOrder(input: WbOrderInput!): Boolean!
+    saveWbOrder(input: WbOrderInput!): WbOrder!
     updateWbOrder(input: UpdateWbInput!): WbOrder!
+  }
+
+  type Subscription {
+    newWbOrder: WbOrder!
   }
 
   input UpdateWbInput {

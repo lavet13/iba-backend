@@ -11,6 +11,7 @@ import createTokens, {
   REFRESH_TOKEN_TTL,
 } from '../../../helpers/create-tokens';
 import { ErrorCode } from '../../../helpers/error-codes';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 const resolvers: Resolvers = {
   Query: {
@@ -73,6 +74,18 @@ const resolvers: Resolvers = {
           token: newRefreshToken,
           expiredAt: new Date(Date.now() + REFRESH_TOKEN_TTL),
         },
+      }).catch(err => {
+        if(err instanceof PrismaClientKnownRequestError) {
+          if(err.code === 'P2025') {
+            return Promise.reject(
+              new GraphQLError(
+                `Refresh token was not found`
+              )
+            );
+          }
+        }
+
+        return Promise.reject(err);
       });
 
       try {
