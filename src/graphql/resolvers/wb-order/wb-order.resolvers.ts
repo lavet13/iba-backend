@@ -1,4 +1,5 @@
-import { Resolvers } from '../../__generated__/types';
+import { Resolvers, ResolverTypeWrapper } from '../../__generated__/types';
+import { WbOrder } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
 
@@ -10,10 +11,13 @@ import { GraphQLError } from 'graphql';
 import sharp from 'sharp';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { applyConstraints } from '../../../helpers/apply-constraints';
+import { getMimeTypeImage } from '../../../helpers/get-mime-type';
+import { isAdmin, isAuthenticated } from '../../composition/authorization';
 
 const resolvers: Resolvers = {
   Query: {
     async wbOrders(_, args, ctx) {
+      const status = args.input.status;
       enum PaginationDirection {
         NONE = 'NONE',
         FORWARD = 'FORWARD',
@@ -90,6 +94,9 @@ const resolvers: Resolvers = {
         cursor,
         skip: cursor ? 1 : undefined, // Skip the cursor wbOrder for the next/previous page
         orderBy: [{ status: 'asc' }, { updatedAt: 'desc' }], // Order by id for consistent pagination
+        where: {
+          status,
+        },
       });
 
       // If no results are retrieved, it means we've reached the end of the
@@ -234,6 +241,7 @@ const resolvers: Resolvers = {
 
       const _sharp = sharp(originalBuffer);
       const metadata = await _sharp.metadata();
+      let bufferToSend: Buffer;
 
       try {
         let optimizedImage: Buffer;
@@ -261,8 +269,10 @@ const resolvers: Resolvers = {
         // Check if the optimized image is significantly larger than the original
         if (optimizedImage.length > originalBuffer.length * 1.1) {
           // If it's more than 10% larger, save the original instead
+          bufferToSend = originalBuffer;
           await fs.promises.writeFile(fileToWrite, originalBuffer);
         } else {
+          bufferToSend = optimizedImage;
           await fs.promises.writeFile(fileToWrite, optimizedImage);
         }
       } catch (err: any) {
@@ -298,9 +308,23 @@ const resolvers: Resolvers = {
           throw new GraphQLError('Unknown error!');
         });
 
-      ctx.pubSub.publish('newWbOrder', { newWbOrder });
+      type FileObject = {
+        buffer: Buffer;
+        type: string;
+      };
 
-      return newWbOrder;
+      const processedFile: FileObject = {
+        buffer: bufferToSend,
+        type: getMimeTypeImage(file.name),
+      };
+
+      const newWbOrderWithFile: ResolverTypeWrapper<WbOrder> & {
+        qrCodeFile: FileObject | null;
+      } = { ...newWbOrder, qrCodeFile: processedFile };
+
+      ctx.pubSub.publish('newWbOrder', { newWbOrder: newWbOrderWithFile });
+
+      return newWbOrderWithFile;
     },
     async updateWbOrder(_, args, ctx) {
       const { id, status } = args.input;
@@ -319,11 +343,16 @@ const resolvers: Resolvers = {
   },
   Subscription: {
     newWbOrder: {
-      subscribe: (_, args, ctx) => ctx.pubSub.subscribe('newWbOrder')
+      subscribe: (_, args, ctx) => ctx.pubSub.subscribe('newWbOrder'),
     },
   },
 };
 
-const resolversComposition: ResolversComposerMapping<any> = {};
+const resolversComposition: ResolversComposerMapping<any> = {
+  'Query.wbOrders': [isAuthenticated(), isAdmin()],
+  'Query.wbOrderById': [isAuthenticated(), isAdmin()],
+  'Mutation.updateWbOrder': [isAuthenticated(), isAdmin()],
+  'Subscription.newWbOrder': [isAuthenticated(), isAdmin()],
+};
 
 export default composeResolvers(resolvers, resolversComposition);

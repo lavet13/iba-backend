@@ -31,6 +31,7 @@ export default gql`
     take: Int
     after: BigInt
     before: BigInt
+    status: OrderStatus
   }
 
   type PageInfo {
@@ -59,6 +60,7 @@ export default gql`
     name: String!
     phone: String!
     qrCode: String
+    qrCodeFile: File
     orderCode: String
     wbPhone: String
     status: OrderStatus!

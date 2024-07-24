@@ -42,6 +42,9 @@ const resolvers: Resolvers = {
       });
 
       if (!tokenRecord) {
+        await ctx.request.cookieStore?.delete('accessToken');
+        await ctx.request.cookieStore?.delete('refreshToken');
+
         throw new GraphQLError('Cannot find token in database', {
           extensions: { code: ErrorCode.INVALID_TOKEN },
         });
@@ -74,9 +77,12 @@ const resolvers: Resolvers = {
           token: newRefreshToken,
           expiredAt: new Date(Date.now() + REFRESH_TOKEN_TTL),
         },
-      }).catch(err => {
+      }).catch(async err => {
         if(err instanceof PrismaClientKnownRequestError) {
           if(err.code === 'P2025') {
+            await ctx.request.cookieStore?.delete('accessToken');
+            await ctx.request.cookieStore?.delete('refreshToken');
+
             return Promise.reject(
               new GraphQLError(
                 `Refresh token was not found`

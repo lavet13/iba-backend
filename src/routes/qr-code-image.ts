@@ -11,12 +11,12 @@ router.get(
   '/:filename',
   isAdminMiddleware,
   allowedFileTypesImagesMiddleware,
-  (req, res) => {
+  async (req, res) => {
     const { filename } = req.params;
     const filePath = path.join(process.cwd(), 'assets', 'qr-codes', filename);
 
     try {
-      const fileData = fs.readFileSync(filePath);
+      const fileData = await fs.promises.readFile(filePath);
       const mimetype = getMimeTypeImage(filename);
 
       res.setHeader('Content-Type', mimetype);
