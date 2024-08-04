@@ -4,6 +4,7 @@ export default gql`
   type Query {
     wbOrders(input: WbOrdersInput!): WbOrdersResponse!
     wbOrderById(id: BigInt!): WbOrder
+    searchWbOrders(input: SearchWbOrdersInput!): WbOrdersResponse!
   }
 
   type Mutation {
@@ -32,6 +33,24 @@ export default gql`
     after: BigInt
     before: BigInt
     status: OrderStatus
+
+    query: String!
+    searchType: SearchTypeWbOrders!
+  }
+
+  input SearchWbOrdersInput {
+    query: String!
+    take: Int
+    after: BigInt
+    before: BigInt
+    searchType: SearchTypeWbOrders!
+  }
+
+  enum SearchTypeWbOrders {
+    ID
+    WB_PHONE
+    PHONE
+    NAME
   }
 
   type PageInfo {

@@ -7,11 +7,10 @@ import {
 import { isAuthenticated } from '../../composition/authorization';
 import { GraphQLError } from 'graphql';
 import { verifyRefreshToken } from '../../../helpers/auth';
-import createTokens, {
-  REFRESH_TOKEN_TTL,
-} from '../../../helpers/create-tokens';
+import createTokens from '../../../helpers/create-tokens';
 import { ErrorCode } from '../../../helpers/error-codes';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { cookieOpts } from '../../../helpers/cookie-opts';
 
 const resolvers: Resolvers = {
   Query: {
@@ -27,8 +26,12 @@ const resolvers: Resolvers = {
     async refreshToken(_, __, ctx) {
       const refreshToken = await ctx.request.cookieStore?.get('refreshToken');
       if (!refreshToken) {
+        await ctx.request.cookieStore?.delete('accessToken');
+        await ctx.request.cookieStore?.delete('refreshToken');
+        console.log('tokens are deleted');
+
         throw new GraphQLError('Refresh token not found', {
-          extensions: { code: ErrorCode.INVALID_TOKEN },
+          extensions: { code: ErrorCode.AUTHENTICATION_REQUIRED },
         });
       }
 
@@ -44,23 +47,28 @@ const resolvers: Resolvers = {
       if (!tokenRecord) {
         await ctx.request.cookieStore?.delete('accessToken');
         await ctx.request.cookieStore?.delete('refreshToken');
+        console.log('tokens deleted from database');
 
         throw new GraphQLError('Cannot find token in database', {
-          extensions: { code: ErrorCode.INVALID_TOKEN },
+          extensions: { code: ErrorCode.AUTHENTICATION_REQUIRED },
         });
       }
 
       try {
         verifyRefreshToken(refreshToken.value);
-      } catch(error: any) {
+      } catch (error: any) {
         console.log({ error });
-        if(error instanceof GraphQLError && error.extensions.code === ErrorCode.AUTHENTICATION_REQUIRED) {
+        if (
+          error instanceof GraphQLError &&
+          error.extensions.code === ErrorCode.AUTHENTICATION_REQUIRED
+        ) {
           await ctx.prisma.refreshToken.delete({
-            where: { id: tokenRecord.id },
+            where: { token: tokenRecord.token, userId: tokenRecord.userId },
           });
 
           await ctx.request.cookieStore?.delete('accessToken');
           await ctx.request.cookieStore?.delete('refreshToken');
+          console.log('tokens deleted from database');
         }
         throw error;
       }
@@ -69,52 +77,38 @@ const resolvers: Resolvers = {
         tokenRecord.user,
       );
 
-      await ctx.prisma.refreshToken.update({
-        where: {
-          token: refreshToken.value,
-        },
-        data: {
-          token: newRefreshToken,
-          expiredAt: new Date(Date.now() + REFRESH_TOKEN_TTL),
-        },
-      }).catch(async err => {
-        if(err instanceof PrismaClientKnownRequestError) {
-          if(err.code === 'P2025') {
-            await ctx.request.cookieStore?.delete('accessToken');
-            await ctx.request.cookieStore?.delete('refreshToken');
-
-            return Promise.reject(
-              new GraphQLError(
-                `Refresh token was not found`
-              )
-            );
+      await ctx.prisma.refreshToken
+        .update({
+          where: {
+            token: tokenRecord.token,
+          },
+          data: {
+            token: newRefreshToken,
+          },
+        })
+        .catch(async err => {
+          if (err instanceof PrismaClientKnownRequestError) {
+            if (err.code === 'P2025') {
+              return Promise.reject(
+                new GraphQLError(`Refresh token was not found. Can\'t update`),
+              );
+            }
           }
-        }
 
-        return Promise.reject(err);
-      });
+          return Promise.reject(err);
+        });
 
       try {
         await ctx.request.cookieStore?.set({
           name: 'accessToken',
           value: accessToken,
-          sameSite: 'none',
-          secure: true,
-          httpOnly: true,
-          domain: null,
-          expires: null,
-          path: '/',
+          ...cookieOpts,
         });
 
         await ctx.request.cookieStore?.set({
           name: 'refreshToken',
           value: newRefreshToken,
-          sameSite: 'none',
-          secure: true,
-          httpOnly: true,
-          domain: null,
-          expires: null,
-          path: '/',
+          ...cookieOpts,
         });
       } catch (reason) {
         console.error(`It failed: ${reason}`);
@@ -134,23 +128,13 @@ const resolvers: Resolvers = {
         await ctx.request.cookieStore?.set({
           name: 'accessToken',
           value: accessToken,
-          sameSite: 'none',
-          secure: true,
-          httpOnly: true,
-          domain: null,
-          expires: null,
-          path: '/',
+          ...cookieOpts,
         });
 
         await ctx.request.cookieStore?.set({
           name: 'refreshToken',
           value: refreshToken,
-          sameSite: 'none',
-          secure: true,
-          httpOnly: true,
-          domain: null,
-          expires: null,
-          path: '/',
+          ...cookieOpts,
         });
       } catch (reason) {
         console.error(`It failed: ${reason}`);
@@ -172,22 +156,12 @@ const resolvers: Resolvers = {
         await ctx.request.cookieStore?.set({
           name: 'accessToken',
           value: accessToken,
-          sameSite: 'none',
-          secure: true,
-          httpOnly: true,
-          domain: null,
-          expires: null,
-          path: '/',
+          ...cookieOpts,
         });
         await ctx.request.cookieStore?.set({
           name: 'refreshToken',
           value: refreshToken,
-          sameSite: 'none',
-          secure: true,
-          httpOnly: true,
-          domain: null,
-          expires: null,
-          path: '/',
+          ...cookieOpts,
         });
       } catch (reason) {
         console.error(`It failed: ${reason}`);
@@ -203,15 +177,36 @@ const resolvers: Resolvers = {
       const refreshToken = await ctx.request.cookieStore?.get('refreshToken');
 
       if (refreshToken) {
-        await ctx.prisma.refreshToken.delete({
-          where: {
-            token: refreshToken.value,
-          },
-        });
+        await ctx.prisma.refreshToken
+          .delete({
+            where: {
+              token: refreshToken.value,
+            },
+          })
+          .catch(async err => {
+            if (err instanceof PrismaClientKnownRequestError) {
+              if (err.code === 'P2025') {
+                await ctx.request.cookieStore?.delete('accessToken');
+                await ctx.request.cookieStore?.delete('refreshToken');
+
+                return Promise.reject(
+                  new GraphQLError(
+                    `Refresh token was not found. Can\'t delete`,
+                    {
+                      extensions: { code: ErrorCode.AUTHENTICATION_REQUIRED },
+                    },
+                  ),
+                );
+              }
+            }
+
+            return Promise.reject(err);
+          });
       }
 
       await ctx.request.cookieStore?.delete('accessToken');
       await ctx.request.cookieStore?.delete('refreshToken');
+      console.log('token deleted after logging out');
 
       return true;
     },

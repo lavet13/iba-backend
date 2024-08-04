@@ -40,7 +40,6 @@ const userExtension = Prisma.defineExtension(client => {
             data: {
               token: refreshToken,
               userId: user.id,
-              expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
             },
           });
 
@@ -79,7 +78,6 @@ const userExtension = Prisma.defineExtension(client => {
             data: {
               token: refreshToken,
               userId: newUser.id,
-              expiredAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
             },
           });
 
