@@ -35,7 +35,7 @@ export default gql`
     status: OrderStatus
 
     query: String!
-    searchType: SearchTypeWbOrders!
+    searchType: [SearchTypeWbOrders!]!
   }
 
   input SearchWbOrdersInput {

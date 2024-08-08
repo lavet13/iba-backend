@@ -34,7 +34,11 @@ export const isAdmin =
       },
     });
 
-    if (user!.role !== 'ADMIN') {
+    if(!user) {
+      throw new GraphQLError('Вы вне системы!', { extensions: { code: ErrorCode.UNAUTHENTICATED } });
+    }
+
+    if (user.role !== 'ADMIN') {
       throw new GraphQLError('Нет прав!', { extensions: { code: ErrorCode.UNAUTHENTICATED } });
     }
 
@@ -52,7 +56,11 @@ export const isManager =
       },
     });
 
-    if (user!.role !== 'MANAGER') {
+    if(!user) {
+      throw new GraphQLError('Вы вне системы!', { extensions: { code: ErrorCode.UNAUTHENTICATED } });
+    }
+
+    if (user.role !== 'MANAGER') {
       throw new GraphQLError('Нет прав!', { extensions: { code: ErrorCode.UNAUTHENTICATED } });
     }
 

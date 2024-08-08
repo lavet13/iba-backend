@@ -94,6 +94,7 @@ const resolvers: Resolvers = {
       }
 
       const searchType = args.input.searchType;
+      console.log({ searchType });
       const conditions: Prisma.WbOrderWhereInput[] = [];
 
       if (searchType.includes(SearchTypeWbOrders.Id)) {
@@ -108,6 +109,7 @@ const resolvers: Resolvers = {
       if (searchType.includes(SearchTypeWbOrders.Name)) {
         conditions.push({ name: { contains: query, mode: 'insensitive' } });
       }
+      console.log({ conditions });
 
       // fetching wbOrders with extra one, so to determine if there's more to fetch
       const wbOrders = await ctx.prisma.wbOrder.findMany({
