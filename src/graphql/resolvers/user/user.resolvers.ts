@@ -40,7 +40,11 @@ const resolvers: Resolvers = {
           token: refreshToken.value,
         },
         include: {
-          user: true,
+          user: {
+            include: {
+              roles: true,
+            },
+          },
         },
       });
 
@@ -210,6 +214,24 @@ const resolvers: Resolvers = {
 
       return true;
     },
+  },
+  User: {
+    async roles(parent, _, ctx) {
+      const userRole = await ctx.prisma.userRole.findMany({
+        where: {
+          userId: parent.id,
+        },
+        select: {
+          role: true,
+        },
+      });
+
+      const roles = userRole.map(r => r.role);
+
+      console.log({ roles });
+
+      return roles;
+    }
   },
 };
 

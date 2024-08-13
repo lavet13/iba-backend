@@ -1,18 +1,23 @@
 import jwt from 'jsonwebtoken';
 import ms from 'ms';
-import { User } from '@prisma/client';
+import { User, Role } from '@prisma/client';
+
+export type UserWithRoles = User & {
+  roles: { role: Role }[];
+};
 
 export const ACCESS_TOKEN_TTL = 10 * 60 * 1000; // 10 minutes
 export const REFRESH_TOKEN_TTL = 1000 * 60 * 60 * 24 * 30.44; // 1 month
 
-const createTokens = (user: User) => {
-  const { id, role } = user;
+const createTokens = (user: UserWithRoles) => {
+  const { id, roles } = user;
+  const userRoles = roles.map(r => r.role);
+  console.log({ userRoles });
 
   const jwtSecret = import.meta.env.VITE_JWT_SECRET;
   const refreshSecret = import.meta.env.VITE_REFRESH_TOKEN_SECRET;
-  console.log({ access: ms(ACCESS_TOKEN_TTL), refresh: ms(REFRESH_TOKEN_TTL) });
 
-  const accessToken = jwt.sign({ id, role }, jwtSecret, {
+  const accessToken = jwt.sign({ id, roles: userRoles }, jwtSecret, {
     expiresIn: ms(ACCESS_TOKEN_TTL),
   });
 

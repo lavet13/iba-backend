@@ -32,7 +32,7 @@ export default gql`
     id: ID!
     email: String!
     name: String!
-    role: Role!
+    roles: [Role!]!
   }
 
   enum Role {

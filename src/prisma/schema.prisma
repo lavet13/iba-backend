@@ -10,15 +10,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model UserRole {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role   @default(USER)
+
+  @@unique([userId, role])
+  @@map("user_roles")
+}
+
 model User {
   id           String         @id @default(uuid())
   name         String
   email        String         @unique
   password     String
-  role         Role           @default(USER)
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
   RefreshToken RefreshToken[]
+  roles        UserRole[]
 
   @@map("users")
 }
@@ -40,15 +50,15 @@ model RefreshToken {
 }
 
 model WbOrder {
-  id          BigInt      @id @default(autoincrement())
-  name        String
-  phone       String
-  qrCode      String?     @unique
-  orderCode   String?
-  wbPhone     String?
-  status      OrderStatus @default(NOT_ASSEMBLED)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        BigInt      @id @default(autoincrement())
+  name      String
+  phone     String
+  qrCode    String?     @unique
+  orderCode String?
+  wbPhone   String?
+  status    OrderStatus @default(NOT_ASSEMBLED)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
 
   @@index([qrCode, wbPhone])
 }

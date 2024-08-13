@@ -22,6 +22,9 @@ const userExtension = Prisma.defineExtension(client => {
                 },
               ],
             },
+            include: {
+              roles: true,
+            },
           });
 
           if (!user) {
@@ -56,6 +59,9 @@ const userExtension = Prisma.defineExtension(client => {
                 name,
                 password: hashedPassword,
               },
+              include: {
+                roles: true,
+              },
             })
             .catch((err: unknown) => {
               if (
@@ -74,6 +80,11 @@ const userExtension = Prisma.defineExtension(client => {
 
           const { accessToken, refreshToken } = createTokens(newUser);
 
+          await client.userRole.create({
+            data: {
+              userId: newUser.id
+            },
+          });
           await client.refreshToken.create({
             data: {
               token: refreshToken,

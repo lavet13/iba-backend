@@ -3,13 +3,14 @@ import fs from 'fs';
 import path from 'path';
 import { Router } from 'express';
 import allowedFileTypesImagesMiddleware from '../middlewares/allowed-image-file-types';
-import isAdminMiddleware from '../middlewares/is-admin-middlware';
+import hasRolesMiddleware from '../middlewares/has-roles-middleware';
+import { Role } from '@prisma/client';
 
 const router = Router();
 
 router.get(
   '/:filename',
-  isAdminMiddleware,
+  hasRolesMiddleware([Role.MANAGER, Role.ADMIN]),
   allowedFileTypesImagesMiddleware,
   async (req, res) => {
     const { filename } = req.params;

@@ -17,6 +17,7 @@ const config: CodegenConfig = {
     mappers: {
       User: '../../../node_modules/.prisma/client#User as UserModel',
       WbOrder: '../../../node_modules/.prisma/client#WbOrder as WbOrderModel',
+      Role: '../../../node_modules/.prisma/client#Role as RoleModel',
     },
     inputMaybeValue: 'undefined | T',
   },
