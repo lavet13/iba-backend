@@ -98,7 +98,13 @@ const resolvers: Resolvers = {
       const conditions: Prisma.WbOrderWhereInput[] = [];
 
       if (searchType.includes(SearchTypeWbOrders.Id)) {
-        const queryAsBigInt = query && Number.isFinite(+query) && BigInt(query) < BigInt('9223372036854775807') ? BigInt(query) : undefined;
+        const queryAsBigInt =
+          query &&
+          Number.isFinite(+query) &&
+          BigInt(query) < BigInt('9223372036854775807')
+            ? BigInt(query)
+            : undefined;
+
         conditions.push({ id: { equals: queryAsBigInt } });
       }
       if (searchType.includes(SearchTypeWbOrders.WbPhone)) {
@@ -120,7 +126,10 @@ const resolvers: Resolvers = {
         skip: cursor ? 1 : undefined, // Skip the cursor wbOrder for the next/previous page
         orderBy: [{ status: 'asc' }, { updatedAt: 'desc' }], // Order by id for consistent pagination
         where: {
-          OR: query.length !== 0 && conditions.length > 0 ? conditions : undefined,
+          OR:
+            query.length !== 0 && conditions.length > 0
+              ? conditions
+              : undefined,
           status,
         },
       });
@@ -376,9 +385,18 @@ const resolvers: Resolvers = {
 
 const resolversComposition: ResolversComposerMapping<any> = {
   'Query.wbOrders': [isAuthenticated(), hasRoles([Role.MANAGER, Role.ADMIN])],
-  'Query.wbOrderById': [isAuthenticated(), hasRoles([Role.MANAGER, Role.ADMIN])],
-  'Mutation.updateWbOrder': [isAuthenticated(), hasRoles([Role.MANAGER, Role.ADMIN])],
-  'Subscription.newWbOrder': [isAuthenticated(), hasRoles([Role.MANAGER, Role.ADMIN])],
+  'Query.wbOrderById': [
+    isAuthenticated(),
+    hasRoles([Role.MANAGER, Role.ADMIN]),
+  ],
+  'Mutation.updateWbOrder': [
+    isAuthenticated(),
+    hasRoles([Role.MANAGER, Role.ADMIN]),
+  ],
+  'Subscription.newWbOrder': [
+    isAuthenticated(),
+    hasRoles([Role.MANAGER, Role.ADMIN]),
+  ],
 };
 
 export default composeResolvers(resolvers, resolversComposition);
