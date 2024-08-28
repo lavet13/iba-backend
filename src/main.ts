@@ -27,11 +27,6 @@ async function bootstrap() {
   console.log({ importEnv: import.meta.env });
   // console.log({ processEnv: process.env });
 
-  app.use(
-    cors({
-      credentials: true,
-    }),
-  );
 
   const yoga = createYoga({
     schema,
@@ -39,6 +34,9 @@ async function bootstrap() {
     graphqlEndpoint: import.meta.env.VITE_GRAPHQL_ENDPOINT,
     graphiql: import.meta.env.DEV,
     landingPage: import.meta.env.PROD,
+    cors: {
+      credentials: true,
+    },
     plugins: [
       // useResponseCache({
       //   // global cache
@@ -47,7 +45,12 @@ async function bootstrap() {
       useCookies(),
     ],
   });
+
   console.log({ DATABASE_URL: process.env.DATABASE_URL });
+
+  app.use(cors({
+    credentials: true,
+  }));
 
   // create endpoints before yoga's endpoint
   app.use('/assets/qr-codes', routerQrCodeImage);
@@ -59,7 +62,7 @@ async function bootstrap() {
       console.log(
         `🚀 Query endpoint ready at http://localhost:${
           import.meta.env.VITE_PORT
-        }${import.meta.env.VITE_GRAPHQL_ENDPOINT}`,
+        }${import.meta.env.VITE_GRAPHQL_ENDPOINT}`
       );
     });
   }
