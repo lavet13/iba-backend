@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import cors from 'cors';
 import 'json-bigint-patch';
 
 import { makeExecutableSchema } from '@graphql-tools/schema';
@@ -25,6 +26,12 @@ async function bootstrap() {
   // console.log({ endpoint: import.meta.env.VITE_GRAPHQL_ENDPOINT });
   console.log({ importEnv: import.meta.env });
   // console.log({ processEnv: process.env });
+
+  app.use(
+    cors({
+      credentials: true,
+    }),
+  );
 
   const yoga = createYoga({
     schema,
@@ -55,7 +62,7 @@ async function bootstrap() {
       console.log(
         `🚀 Query endpoint ready at http://localhost:${
           import.meta.env.VITE_PORT
-        }${import.meta.env.VITE_GRAPHQL_ENDPOINT}`
+        }${import.meta.env.VITE_GRAPHQL_ENDPOINT}`,
       );
     });
   }
