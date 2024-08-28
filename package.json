@@ -10,6 +10,7 @@
     "build": "rm -rf dist && vite build --debug && yarn start",
     "debug": "vite --debug --inspect-brk",
     "seed:dev": "tsx ./src/prisma/seed.dev.ts",
+    "seed:prod": "tsx ./src/prisma/seed.prod.ts",
     "migrate:dev": "prisma migrate dev",
     "migrate:prod": "prisma migrate deploy",
     "studio": "npx prisma studio",
