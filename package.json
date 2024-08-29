@@ -7,7 +7,7 @@
   "private": "true",
   "scripts": {
     "dev": "vite",
-    "build": "rm -rf dist && vite build --debug && yarn start",
+    "build": "rm -rf dist && vite build --debug",
     "debug": "vite --debug --inspect-brk",
     "seed:dev": "tsx ./src/prisma/seed.dev.ts",
     "seed:prod": "tsx ./src/prisma/seed.prod.ts",
