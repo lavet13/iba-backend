@@ -60,7 +60,7 @@ async function bootstrap() {
   if (import.meta.env.PROD) {
     app.listen(import.meta.env.VITE_PORT, () => {
       console.log(
-        `🚀 Query endpoint ready at http://0.0.0.0:${
+        `🚀 Query endpoint ready at http://localhost:${
           import.meta.env.VITE_PORT
         }${import.meta.env.VITE_GRAPHQL_ENDPOINT}`
       );
