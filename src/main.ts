@@ -1,6 +1,5 @@
 import 'dotenv/config';
 import express from 'express';
-import cors from 'cors';
 import 'json-bigint-patch';
 
 import { makeExecutableSchema } from '@graphql-tools/schema';
@@ -13,7 +12,7 @@ import typeDefs from './graphql/types';
 import { createContext } from './context';
 import { createYoga } from 'graphql-yoga';
 
-import routerQrCodeImage from './routes/qr-code-image';
+import configure from './routers';
 
 const schema = makeExecutableSchema({
   typeDefs,
@@ -26,7 +25,6 @@ async function bootstrap() {
   // console.log({ endpoint: import.meta.env.VITE_GRAPHQL_ENDPOINT });
   console.log({ importEnv: import.meta.env });
   // console.log({ processEnv: process.env });
-
 
   const yoga = createYoga({
     schema,
@@ -48,14 +46,7 @@ async function bootstrap() {
 
   console.log({ DATABASE_URL: process.env.DATABASE_URL });
 
-  app.use(cors({
-    credentials: true,
-  }));
-
-  // create endpoints before yoga's endpoint
-  app.use('/assets/qr-codes', routerQrCodeImage);
-
-  app.use(yoga);
+  configure(app, yoga);
 
   if (import.meta.env.PROD) {
     app.listen(import.meta.env.VITE_PORT, () => {
