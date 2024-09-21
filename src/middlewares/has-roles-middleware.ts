@@ -7,29 +7,35 @@ export function hasRoles(roles: Role[], requiredRoles: Role[]): boolean {
   return requiredRoles.some(r => roles.includes(r));
 }
 
-const hasRolesMiddleware = (roles: Role[]): RequestHandler  => async (req, res, next) => {
-  const { cookieStore } = createCookieHandler(req, res);
+const hasRolesMiddleware =
+  (roles: Role[]): RequestHandler =>
+  async (req, res, next) => {
+    const { cookieStore } = createCookieHandler(req, res);
 
-  const accessToken = await cookieStore.get({ name: 'accessToken' });
-  const token = accessToken?.value;
+    const accessToken = await cookieStore.get({ name: 'accessToken' });
+    const token = accessToken?.value;
 
-  if (!token) {
-    return res.status(401).send('Unauthorized: No token provided');
-  }
-
-  let verified = null;
-
-  try {
-    verified = verifyAccessToken(token);
-
-    if (hasRoles(verified?.roles, roles)) {
-      return next();
-    } else {
-      return res.status(403).send('Forbidden: No privileges');
+    if (!token) {
+      return res
+        .status(401)
+        .json({ message: 'Unauthorized: No token provided', statusCode: 401 });
     }
-  } catch (error: unknown) {
-    return res.send(error);
-  }
-};
+
+    let verified = null;
+
+    try {
+      verified = verifyAccessToken(token);
+
+      if (hasRoles(verified?.roles, roles)) {
+        return next();
+      } else {
+        return res
+          .status(403)
+          .json({ message: 'Forbidden: No privileges', statusCode: 403 });
+      }
+    } catch (error: unknown) {
+      return res.send(error);
+    }
+  };
 
 export default hasRolesMiddleware;

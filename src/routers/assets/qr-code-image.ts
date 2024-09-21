@@ -1,7 +1,7 @@
 import path from 'path';
 import { Router } from 'express';
-import allowedFileTypesImagesMiddleware from '../middlewares/allowed-image-file-types';
-import hasRolesMiddleware from '../middlewares/has-roles-middleware';
+import allowedFileTypesImagesMiddleware from '../../middlewares/allowed-image-file-types';
+import hasRolesMiddleware from '../../middlewares/has-roles-middleware';
 import { Role } from '@prisma/client';
 
 // import { getMimeTypeImage } from '../helpers/get-mime-type';
@@ -18,10 +18,10 @@ export default function qrCodeImage() {
       const { filename } = req.params;
       const filePath = path.join(process.cwd(), 'assets', 'qr-codes', filename);
 
-      res.sendFile(filePath, (err) => {
-        if(err) {
+      return res.sendFile(filePath, err => {
+        if (err) {
           console.error('Error sending file: ', err);
-          res.status(404).send('File not found');
+          res.status(404).json({ message: 'File not found', statusCode: 404 });
         }
       });
 

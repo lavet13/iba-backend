@@ -65,7 +65,6 @@ export default gql`
     pageInfo: PageInfo!
   }
 
-
   input WbOrderInput {
     FLP: String!
     QR: File

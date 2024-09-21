@@ -1,4 +1,4 @@
-import { Application } from 'express';
+import { Application, NextFunction, Response, Request } from 'express';
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import cors from 'cors';
@@ -25,9 +25,11 @@ export default function configure(
     })
     .use('/api', api())
     .use('/assets', assets())
-    .use((_, res) => {
-      res.json({
-        error: 'Invalid route',
-      });
-    });
+    .use((_, res, __) => {
+      res.status(404).json({ message: 'Route not found', statusCode: 404 });
+    })
+    .use((error: Error, _: Request, res: Response, __: NextFunction) => {
+      console.error('Error: ', error);
+      res.status(500).json({ message: 'Internal Server Error', statusCode: 500 });
+    })
 }
