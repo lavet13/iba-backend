@@ -2,7 +2,7 @@ import {
   Resolvers,
   ResolverTypeWrapper,
   SearchTypeWbOrders,
-} from '../../__generated__/types';
+} from '@/graphql/__generated__/types';
 import { Prisma, Role, WbOrder } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
@@ -14,9 +14,9 @@ import {
 import { GraphQLError } from 'graphql';
 import sharp from 'sharp';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { applyConstraints } from '../../../helpers/apply-constraints';
-import { getMimeTypeImage } from '../../../helpers/get-mime-type';
-import { hasRoles, isAuthenticated } from '../../composition/authorization';
+import { applyConstraints } from '@/helpers/apply-constraints';
+import { getMimeTypeImage } from '@/helpers/get-mime-type';
+import { hasRoles, isAuthenticated } from '@/graphql/composition/authorization';
 
 const resolvers: Resolvers = {
   Query: {
@@ -225,6 +225,7 @@ const resolvers: Resolvers = {
   Mutation: {
     async saveWbOrder(_, args, ctx) {
       const file: File | null = args.input.QR;
+      console.log({ file });
 
       if (!file) {
         const newWbOrder = await ctx.prisma.wbOrder
@@ -391,10 +392,10 @@ const resolversComposition: ResolversComposerMapping<any> = {
     isAuthenticated(),
     hasRoles([Role.MANAGER, Role.ADMIN]),
   ],
-  'Subscription.newWbOrder': [
-    isAuthenticated(),
-    hasRoles([Role.MANAGER, Role.ADMIN]),
-  ],
+  // 'Subscription.newWbOrder': [
+  //   isAuthenticated(),
+  //   hasRoles([Role.MANAGER, Role.ADMIN]),
+  // ],
 };
 
 export default composeResolvers(resolvers, resolversComposition);

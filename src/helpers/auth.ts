@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 
 import { GraphQLError } from 'graphql';
-import { ErrorCode } from './error-codes';
+import { ErrorCode } from '@/helpers/error-codes';
 
 export function verifyAccessToken(token: string) {
   try {

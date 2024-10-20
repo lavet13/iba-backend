@@ -1,7 +1,7 @@
 import path from 'path';
 import { Router } from 'express';
-import allowedFileTypesImagesMiddleware from '../../middlewares/allowed-image-file-types';
-import hasRolesMiddleware from '../../middlewares/has-roles-middleware';
+import allowedFileTypesImagesMiddleware from '@/middlewares/allowed-image-file-types';
+import hasRolesMiddleware from '@/middlewares/has-roles-middleware';
 import { Role } from '@prisma/client';
 
 // import { getMimeTypeImage } from '../helpers/get-mime-type';

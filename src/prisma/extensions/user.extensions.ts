@@ -1,9 +1,9 @@
 import { Prisma } from '@prisma/client';
 import { GraphQLError } from 'graphql';
 
-import createTokens from '../../helpers/create-tokens';
-import validatePassword from '../../helpers/validate-password';
-import generatePasswordHash from '../../helpers/generate-password-hash';
+import createTokens from '@/helpers/create-tokens';
+import validatePassword from '@/helpers/validate-password';
+import generatePasswordHash from '@/helpers/generate-password-hash';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 const userExtension = Prisma.defineExtension(client => {

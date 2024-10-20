@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "moduleResolution": "bundler",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "importHelpers": true,
@@ -28,9 +28,10 @@
     "noEmitHelpers": false,
 
     "strictPropertyInitialization": false /* this option was crucial like deadass im spend almost 2hours LULE */,
-
-    "outDir": "dist",
-    "rootDir": "src"
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "exclude": ["dist", "node_modules"]
 }

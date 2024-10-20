@@ -4,15 +4,15 @@ import 'json-bigint-patch';
 
 import { makeExecutableSchema } from '@graphql-tools/schema';
 import { useCookies } from '@whatwg-node/server-plugin-cookies';
-import { useJWT } from '@graphql-yoga/plugin-jwt';
+import { useGraphQLSSE } from '@graphql-yoga/plugin-graphql-sse';
 
-import resolvers from './graphql/resolvers';
-import typeDefs from './graphql/types';
+import resolvers from '@/graphql/resolvers';
+import typeDefs from '@/graphql/types';
 
-import { createContext } from './context';
+import { createContext } from '@/context';
 import { createYoga } from 'graphql-yoga';
 
-import configure from './routers';
+import configure from '@/routers';
 
 const schema = makeExecutableSchema({
   typeDefs,
@@ -36,10 +36,7 @@ async function bootstrap() {
       credentials: true,
     },
     plugins: [
-      // useResponseCache({
-      //   // global cache
-      //   session: () => null,
-      // }),
+      useGraphQLSSE(),
       useCookies(),
     ],
   });

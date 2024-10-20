@@ -1,6 +1,6 @@
 import { RequestHandler } from 'express';
-import { verifyAccessToken } from '../helpers/auth';
-import { createCookieHandler } from '../utils/express/create-cookie-handler';
+import { verifyAccessToken } from '@/helpers/auth';
+import { createCookieHandler } from '@/utils/express/create-cookie-handler';
 import { Role } from '@prisma/client';
 
 export function hasRoles(roles: Role[], requiredRoles: Role[]): boolean {

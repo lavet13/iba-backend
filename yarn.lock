@@ -1353,6 +1353,13 @@
   dependencies:
     tslib "^2.5.2"
 
+"@graphql-yoga/plugin-graphql-sse@^3.7.0":
+  version "3.7.0"
+  resolved "https://registry.yarnpkg.com/@graphql-yoga/plugin-graphql-sse/-/plugin-graphql-sse-3.7.0.tgz#e7726a8e41d8d4b79537eb40d807d59241070abb"
+  integrity sha512-vmBYdqL7nGl//obukeu5HTwYPanQ1bJRXkCec4TS5B7t/BLjD79cy28c4EDUxsZS83TJYsnNYIhZGSoiVIuIXQ==
+  dependencies:
+    graphql-sse "^2.0.0"
+
 "@graphql-yoga/plugin-jwt@^2.3.0":
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/@graphql-yoga/plugin-jwt/-/plugin-jwt-2.3.0.tgz#3ce962781b76a56952ce6802087b2fb0ff199669"
@@ -3668,6 +3675,11 @@ graphql-scalars@^1.23.0:
   integrity sha512-YTRNcwitkn8CqYcleKOx9IvedA8JIERn8BRq21nlKgOr4NEcTaWEG0sT+H92eF3ALTFbPgsqfft4cw+MGgv0Gg==
   dependencies:
     tslib "^2.5.0"
+
+graphql-sse@^2.0.0, graphql-sse@^2.5.3:
+  version "2.5.3"
+  resolved "https://registry.yarnpkg.com/graphql-sse/-/graphql-sse-2.5.3.tgz#c3557803f2db306d8ac87fd3bc089b6d4bac8353"
+  integrity sha512-5IcFW3e7fPOG7oFkK1v3X1wWtCJArQKB/H1UJeNotjy7a/9EYA5K+EiHJF1BiDSVNx7y64bd0FlDETrNBSvIHQ==
 
 graphql-tag@^2.11.0:
   version "2.12.6"

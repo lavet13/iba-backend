@@ -2,10 +2,10 @@ import { Application, NextFunction, Response, Request } from 'express';
 import bodyParser from 'body-parser';
 import compression from 'compression';
 import cors from 'cors';
-import api from './api';
-import assets from './assets';
+import api from '@/routers/api';
+import assets from '@/routers/assets';
 import { YogaServerInstance } from 'graphql-yoga';
-import { ContextValue } from '../context';
+import { ContextValue } from '@/context';
 
 export default function configure(
   app: Application,
@@ -25,11 +25,17 @@ export default function configure(
     })
     .use('/api', api())
     .use('/assets', assets())
+
+    // 404 handler
     .use((_, res, __) => {
       res.status(404).json({ message: 'Route not found', statusCode: 404 });
     })
+
+    // error handling middleware
     .use((error: Error, _: Request, res: Response, __: NextFunction) => {
       console.error('Error: ', error);
-      res.status(500).json({ message: 'Internal Server Error', statusCode: 500 });
-    })
+      res
+        .status(500)
+        .json({ message: 'Internal Server Error', statusCode: 500 });
+    });
 }

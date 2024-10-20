@@ -1,6 +1,6 @@
 import { mergeTypeDefs } from '@graphql-tools/merge';
-import userTypes from './user/user.types';
-import wbOrderTypes from './wb-order/wb-order.types';
-import scalarTypes from './scalar/scalar.types';
+import userTypes from '@/graphql/types/user/user.types';
+import wbOrderTypes from '@/graphql/types/wb-order/wb-order.types';
+import scalarTypes from '@/graphql/types/scalar/scalar.types';
 
 export default mergeTypeDefs([scalarTypes, userTypes, wbOrderTypes]);

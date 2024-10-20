@@ -1,5 +1,5 @@
-import { Resolvers } from '../../__generated__/types';
-import DateScalars from '../../scalars/date.scalars';
+import { Resolvers } from '@/graphql/__generated__/types';
+import DateScalars from '@/graphql/scalars/date.scalars';
 import { BigIntResolver } from 'graphql-scalars';
 
 const resolvers: Resolvers = {

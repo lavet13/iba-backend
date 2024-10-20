@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import { getMimeTypeImage, mimeTypesImages } from '../helpers/get-mime-type';
+import { getMimeTypeImage, mimeTypesImages } from '@/helpers/get-mime-type';
 
 const ALLOWED_MIME_TYPES_IMAGES = Object.values(mimeTypesImages);
 

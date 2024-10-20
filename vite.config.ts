@@ -3,6 +3,7 @@ import { VitePluginNode } from 'vite-plugin-node';
 import codegen from 'vite-plugin-graphql-codegen';
 import topLevelAwait from 'vite-plugin-top-level-await';
 import dynamicImport from 'vite-plugin-dynamic-import';
+import path from 'path';
 
 export default defineConfig({
   server: {
@@ -10,6 +11,11 @@ export default defineConfig({
     strictPort: true,
     host: true, // needed for the Docker Container port mapping to work
     // open: true,
+  },
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, './src'),
+    },
   },
   build: {
     minify: true,

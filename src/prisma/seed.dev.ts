@@ -1,5 +1,5 @@
-import prisma from './prisma';
-import generatePasswordHash from '../helpers/generate-password-hash';
+import prisma from '@/prisma';
+import generatePasswordHash from '@/helpers/generate-password-hash';
 import { Prisma, Role } from '@prisma/client';
 
 let countDown = 0;

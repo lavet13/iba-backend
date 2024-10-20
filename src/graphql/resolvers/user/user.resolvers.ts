@@ -1,16 +1,16 @@
-import { Resolvers } from '../../__generated__/types';
+import { Resolvers } from '@/graphql/__generated__/types';
 
 import {
   ResolversComposerMapping,
   composeResolvers,
 } from '@graphql-tools/resolvers-composition';
-import { isAuthenticated } from '../../composition/authorization';
+import { isAuthenticated } from '@/graphql/composition/authorization';
 import { GraphQLError } from 'graphql';
-import { verifyRefreshToken } from '../../../helpers/auth';
-import createTokens from '../../../helpers/create-tokens';
-import { ErrorCode } from '../../../helpers/error-codes';
+import { verifyRefreshToken } from '@/helpers/auth';
+import createTokens from '@/helpers/create-tokens';
+import { ErrorCode } from '@/helpers/error-codes';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { cookieOpts } from '../../../helpers/cookie-opts';
+import { cookieOpts } from '@/helpers/cookie-opts';
 
 const resolvers: Resolvers = {
   Query: {

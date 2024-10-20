@@ -1,19 +1,21 @@
-import { GraphQLError, GraphQLScalarType, Kind } from "graphql";
+import { GraphQLError, GraphQLScalarType, Kind } from 'graphql';
 
 export default new GraphQLScalarType({
   name: 'Date',
   description: 'Custom `Date` scalar type',
   serialize(value) {
     // value sent to the client
-    if(value instanceof Date) {
+    if (value instanceof Date) {
       return value.getTime();
     }
 
-    throw new GraphQLError('GraphQL `Date` scalar serializer expected a `Date` object');
+    throw new GraphQLError(
+      'GraphQL `Date` scalar serializer expected a `Date` object',
+    );
   },
   parseValue(value) {
     // value from the client
-    if(typeof value === 'number') {
+    if (typeof value === 'number') {
       return new Date(value);
     }
 
@@ -25,5 +27,5 @@ export default new GraphQLScalarType({
     }
 
     return null;
-  }
+  },
 });

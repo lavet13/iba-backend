@@ -1,5 +1,5 @@
-import prisma from './prisma';
-import generatePasswordHash from '../helpers/generate-password-hash';
+import prisma from '@/prisma';
+import generatePasswordHash from '@/helpers/generate-password-hash';
 import { Role } from '@prisma/client';
 
 export default async function seed() {

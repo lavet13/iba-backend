@@ -1,10 +1,10 @@
 import { ResolversComposition } from '@graphql-tools/resolvers-composition';
 import { GraphQLError, GraphQLFieldResolver } from 'graphql';
-import { ContextValue } from '../../context';
-import { verifyAccessToken } from '../../helpers/auth';
-import { ErrorCode } from '../../helpers/error-codes';
+import { ContextValue } from '@/context';
+import { verifyAccessToken } from '@/helpers/auth';
+import { ErrorCode } from '@/helpers/error-codes';
 import { Role } from '@prisma/client';
-import { UserWithRoles } from '../../helpers/create-tokens';
+import { UserWithRoles } from '@/helpers/create-tokens';
 
 export function userHasRole(user: UserWithRoles, requiredRoles: Role[]): boolean {
   return requiredRoles.some(r => user.roles.map(r => r.role).includes(r));
