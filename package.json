@@ -8,7 +8,7 @@
   "scripts": {
     "dev": "vite",
     "build": "rm -rf dist && vite build --debug",
-    "debug": "vite --debug --inspect-brk",
+    "debug": "vite --debug",
     "seed:dev": "tsx ./src/prisma/seed.dev.ts",
     "seed:prod": "tsx ./src/prisma/seed.prod.ts",
     "migrate:dev": "prisma migrate dev",
