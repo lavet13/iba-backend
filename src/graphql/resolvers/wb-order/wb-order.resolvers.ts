@@ -97,6 +97,7 @@ const resolvers: Resolvers = {
       const conditions: Prisma.WbOrderWhereInput[] = [];
 
       if (searchType.includes(SearchTypeWbOrders.Id)) {
+        // Number.isFinite isn't a solution, something
         const queryAsBigInt =
           query &&
           Number.isFinite(+query) &&
@@ -116,13 +117,19 @@ const resolvers: Resolvers = {
         conditions.push({ name: { contains: query, mode: 'insensitive' } });
       }
 
+      const orderBy = [
+        { id: 'asc' as const },
+        { status: 'asc' as const },
+        { updatedAt: 'desc' as const }
+      ];
+
       // fetching wbOrders with extra one, so to determine if there's more to fetch
       const wbOrders = await ctx.prisma.wbOrder.findMany({
         take:
           direction === PaginationDirection.BACKWARD ? -(take + 1) : take + 1, // Fetch one extra wbOrder for determining `hasNextPage`
         cursor,
         skip: cursor ? 1 : undefined, // Skip the cursor wbOrder for the next/previous page
-        orderBy: [{ status: 'asc' }, { updatedAt: 'desc' }], // Order by id for consistent pagination
+        orderBy,
         where: {
           OR:
             query.length !== 0 && conditions.length > 0
@@ -131,6 +138,7 @@ const resolvers: Resolvers = {
           status,
         },
       });
+      console.log({ wbOrders });
 
       // If no results are retrieved, it means we've reached the end of the
       // pagination or because we stumble upon invalid cursor, so on the
@@ -149,17 +157,11 @@ const resolvers: Resolvers = {
         };
       }
 
-      // If the number of wbOrders fetched is less than or equal to the
-      // `take` value, you include all the wbOrders in the `edges` array.
-      // However, if the number of wbOrders fetched is greater than
-      // the `take` value, you exclude the extra wbOrder from
-      // the `edges` array by slicing the wbOrders array.
+      // Fix: Properly handle edge slicing based on direction and take value
       const edges =
-        wbOrders.length <= take
-          ? wbOrders
-          : direction === PaginationDirection.BACKWARD
-            ? wbOrders.slice(1, wbOrders.length)
-            : wbOrders.slice(0, -1);
+        direction === PaginationDirection.BACKWARD
+          ? wbOrders.slice(1).reverse().slice(0, take) // For backward pagination, remove first item and take requested amount
+          : wbOrders.slice(0, take); // For forward/none pagination, just take requested amount
 
       const hasMore = wbOrders.length > take;
 

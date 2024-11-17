@@ -21,7 +21,7 @@ export default function configure(
     .use(bodyParser.json())
     .use(compression())
     .get('/', (_, res) => {
-      return res.json({ message: 'Welcome to nothing!' });
+      return res.json({ message: 'Welcome to the root source of evil!', statusCode: 201 });
     })
     .use('/api', api())
     .use('/assets', assets())
