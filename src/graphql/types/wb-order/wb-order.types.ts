@@ -4,7 +4,6 @@ export default gql`
   type Query {
     wbOrders(input: WbOrdersInput!): WbOrdersResponse!
     wbOrderById(id: BigInt!): WbOrder
-    searchWbOrders(input: SearchWbOrdersInput!): WbOrdersResponse!
   }
 
   type Mutation {
@@ -28,6 +27,11 @@ export default gql`
     updatedAt: Date!
   }
 
+  input SortingState {
+    id: String!
+    desc: Boolean!
+  }
+
   input WbOrdersInput {
     take: Int
     after: BigInt
@@ -35,15 +39,7 @@ export default gql`
     status: OrderStatus
 
     query: String!
-    searchType: [SearchTypeWbOrders!]!
-  }
-
-  input SearchWbOrdersInput {
-    query: String!
-    take: Int
-    after: BigInt
-    before: BigInt
-    searchType: SearchTypeWbOrders!
+    sorting: [SortingState!]!
   }
 
   enum SearchTypeWbOrders {

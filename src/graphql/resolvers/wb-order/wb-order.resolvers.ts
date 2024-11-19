@@ -93,17 +93,20 @@ const resolvers: Resolvers = {
         }
       }
 
-      const searchType = args.input.searchType;
+      const searchType = Object.values(SearchTypeWbOrders);
       const conditions: Prisma.WbOrderWhereInput[] = [];
 
       if (searchType.includes(SearchTypeWbOrders.Id)) {
         // Number.isFinite isn't a solution, something
-        const queryAsBigInt =
-          query &&
-          Number.isFinite(+query) &&
-          BigInt(query) < BigInt('9223372036854775807')
-            ? BigInt(query)
-            : undefined;
+        let queryAsBigInt = undefined;
+        try {
+          queryAsBigInt =
+            query && BigInt(query)
+              ? BigInt(query)
+              : undefined;
+        } catch(err) {
+          queryAsBigInt = undefined;
+        }
 
         conditions.push({ id: { equals: queryAsBigInt } });
       }
@@ -117,11 +120,8 @@ const resolvers: Resolvers = {
         conditions.push({ name: { contains: query, mode: 'insensitive' } });
       }
 
-      const orderBy = [
-        { id: 'asc' as const },
-        { status: 'asc' as const },
-        { updatedAt: 'desc' as const }
-      ];
+      const sorting = args.input.sorting;
+      const orderBy = sorting[0] ? { [sorting[0].id]: sorting[0].desc ? 'desc' : 'asc' } : [];
 
       // fetching wbOrders with extra one, so to determine if there's more to fetch
       const wbOrders = await ctx.prisma.wbOrder.findMany({
@@ -138,7 +138,6 @@ const resolvers: Resolvers = {
           status,
         },
       });
-      console.log({ wbOrders });
 
       // If no results are retrieved, it means we've reached the end of the
       // pagination or because we stumble upon invalid cursor, so on the
